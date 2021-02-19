@@ -12,6 +12,7 @@ import genotypes2
 import torch.utils
 import torchvision.datasets as dset
 import torch.backends.cudnn as cudnn
+from collections import namedtuple
 
 from torch.autograd import Variable
 from model2 import NetworkCIFAR as Network
@@ -38,6 +39,7 @@ parser.add_argument('--drop_path_prob', type=float, default=0.3, help='drop path
 parser.add_argument('--save', type=str, default='EXP', help='experiment name')
 parser.add_argument('--seed', type=int, default=0, help='random seed')
 parser.add_argument('--arch', type=str, default='PCDARTS', help='which architecture to use')
+parser.add_argument('--genotype', required=True)
 parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping')
 args = parser.parse_args()
 
@@ -50,6 +52,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 fh = logging.FileHandler(os.path.join(args.save, 'log.txt'))
 fh.setFormatter(logging.Formatter(log_format))
 logging.getLogger().addHandler(fh)
+
+Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
 
 CIFAR_CLASSES = 10
 
@@ -69,7 +73,8 @@ def main():
   logging.info('gpu device = %d' % args.gpu)
   logging.info("args = %s", args)
 
-  genotype = eval("genotypes2.%s" % args.arch)
+  # genotype = eval("genotypes2.%s" % args.arch)
+  genotype = eval(args.genotype)
   model = Network(args.init_channels, CIFAR_CLASSES, args.layers, args.auxiliary, genotype)
   model = model.cuda()
 
