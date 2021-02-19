@@ -43,7 +43,7 @@ parser.add_argument('--genotype', required=True)
 parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping')
 args = parser.parse_args()
 
-args.save = 'eval-{}-{}'.format(args.save, time.strftime("%Y%m%d-%H%M%S"))
+args.save = 'eval-{}-{}-{}'.format(args.save, time.strftime("%Y%m%d-%H%M%S"), np.random.randint(1000000))
 utils.create_exp_dir(args.save, scripts_to_save=glob.glob('*.py'))
 
 log_format = '%(asctime)s %(message)s'
