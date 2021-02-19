@@ -8,13 +8,13 @@ import utils
 import logging
 import argparse
 import torch.nn as nn
-import genotypes
+import genotypes2
 import torch.utils
 import torchvision.datasets as dset
 import torch.backends.cudnn as cudnn
 
 from torch.autograd import Variable
-from model import NetworkCIFAR as Network
+from model2 import NetworkCIFAR as Network
 
 
 parser = argparse.ArgumentParser("cifar")
@@ -69,7 +69,7 @@ def main():
   logging.info('gpu device = %d' % args.gpu)
   logging.info("args = %s", args)
 
-  genotype = eval("genotypes.%s" % args.arch)
+  genotype = eval("genotypes2.%s" % args.arch)
   model = Network(args.init_channels, CIFAR_CLASSES, args.layers, args.auxiliary, genotype)
   model = model.cuda()
 
