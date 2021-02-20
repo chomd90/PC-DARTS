@@ -17,9 +17,6 @@ PRIMITIVES = [
     'dil_conv_5x5'
 ]
 
-
-
-
 def to_dag(C_in, gene, reduction):
   """ generate discrete ops from gene """
   dag = nn.ModuleList()
@@ -29,11 +26,11 @@ def to_dag(C_in, gene, reduction):
       # reduction cell & from input nodes => stride = 2
       stride = 2 if reduction and s_idx < 2 else 1
       op = ops.OPS[op_name](C_in, stride, True)
-      if not isinstance(op, ops.Identity): # Identity does not use drop path
-        op = nn.Sequential(
-          op,
-          ops.DropPath_()
-        )
+      # if not isinstance(op, ops.Identity): # Identity does not use drop path
+      #   op = nn.Sequential(
+      #     op,
+      #     ops.DropPath_()
+      #   )
       op.s_idx = s_idx
       row.append(op)
     dag.append(row)

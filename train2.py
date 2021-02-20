@@ -66,12 +66,12 @@ def main():
 
   np.random.seed(args.seed)
   torch.cuda.set_device(args.gpu)
-  # cudnn.benchmark = True
+  cudnn.benchmark = True
   torch.manual_seed(args.seed)
-  # cudnn.enabled=True
+  cudnn.enabled=True
   torch.cuda.manual_seed(args.seed)
-  cudnn.deterministic = True
-  cudnn.benchmark = False
+  # cudnn.deterministic = True
+  # cudnn.benchmark = False
   logging.info('gpu device = %d' % args.gpu)
   logging.info("args = %s", args)
 
@@ -113,7 +113,7 @@ def main():
     # scheduler.step()
     logging.info('epoch %d lr %e', epoch, scheduler.get_lr()[0])
     model.drop_path_prob = args.drop_path_prob * epoch / args.epochs
-
+    # model.module.drop_path_prob(drop_prob)
     train_acc, train_obj = train(train_queue, model, criterion, optimizer)
     logging.info('train_acc %f', train_acc)
 

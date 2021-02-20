@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 import genotypes2 as gt
+import operations as ops
 from operations import *
 from torch.autograd import Variable
 from utils import drop_path
@@ -36,8 +37,6 @@ class Cell(nn.Module):
     #   concat = genotype.normal_concat
     # self._compile(C, op_names, indices, concat, reduction)
 
-
-
   def _compile(self, C, op_names, indices, concat, reduction):
     assert len(op_names) == len(indices)
     self._steps = len(op_names) // 2
@@ -51,13 +50,21 @@ class Cell(nn.Module):
       self._ops += [op]
     self._indices = indices
 
-  def forward(self, s0, s1):
+  def forward(self, s0, s1, drop_prob):
     s0 = self.preprocess0(s0)
     s1 = self.preprocess1(s1)
 
     states = [s0, s1]
     for edges in self.dag:
-      s_cur = sum(op(states[op.s_idx]) for op in edges)
+      buffer = []
+      for op in edges:
+        if not isinstance(op, ops.Identity):
+          a = drop_path(op(states[op.s_idx]), drop_prob)
+        else:
+          a = op(states[op.s_idx])
+        buffer.append(a)
+      s_cur = sum(buffer)
+      # s_cur = sum(op(states[op.s_idx]) for op in edges)
       states.append(s_cur)
 
     s_out = torch.cat([states[i] for i in self.concat], dim=1)
@@ -176,13 +183,19 @@ class NetworkCIFAR(nn.Module):
     s0 = s1 = self.stem(input)
     for i, cell in enumerate(self.cells):
       # s0, s1 = s1, cell(s0, s1, self.drop_path_prob)
-      s0, s1 = s1, cell(s0, s1)
+      s0, s1 = s1, cell(s0, s1, self.drop_path_prob)
       if i == 2*self._layers//3:
         if self._auxiliary and self.training:
           logits_aux = self.auxiliary_head(s1)
     out = self.global_pooling(s1)
     logits = self.classifier(out.view(out.size(0),-1))
     return logits, logits_aux
+
+  def drop_path_prob(self, p):
+    """ Set drop path probability """
+    for module in self.modules():
+      if isinstance(module, ops.DropPath_):
+        module.p = p
 
 
 class NetworkImageNet(nn.Module):

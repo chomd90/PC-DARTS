@@ -46,8 +46,18 @@ class DilConv(nn.Module):
   def forward(self, x):
     return self.op(x)
 
+def drop_path(x, drop_prob):
+  if drop_prob > 0.:
+    keep_prob = 1.-drop_prob
+    mask = Variable(torch.cuda.FloatTensor(x.size(0), 1, 1, 1).bernoulli_(keep_prob))
+    x.div_(keep_prob)
+    x.mul_(mask)
+  return x
+
 def drop_path_(x, drop_prob, training):
   if training and drop_prob > 0.:
+  # if drop_prob > 0.:
+    print("drop_path working")
     keep_prob = 1. - drop_prob
     # per data point mask; assuming x in cuda.
     mask = torch.cuda.FloatTensor(x.size(0), 1, 1, 1).bernoulli_(keep_prob)
@@ -65,6 +75,7 @@ class DropPath_(nn.Module):
     super().__init__()
     #self.p = 0.2
     self.p = p
+    # print(p)
 
   def extra_repr(self):
     return 'p={}, inplace'.format(self.p)
